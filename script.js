@@ -15,11 +15,35 @@ let main = document.getElementById("main");
 
 //Add data
 async function add() {
-  try {
-    if (!title.value && !description.value) {
-      alert("Please fill all fields");
+    if (!title.value) {
+      alert("Please write title");
       return;
     }
+    if (!description.value) {
+      alert("Please write description");
+      return;
+    }
+
+  //Edit data
+  if (editId) {
+    console.log("Id to be edited : ", editId);
+    console.log("Id to be edited : ", editId);
+    try {
+    const { data, error } = await supabase
+      .from("Todo application")
+      .upsert({
+        title: title.value,
+        priority: selectedPriority,
+        description: description.value,
+      })
+      .select("*")
+      .eq("id", editId);
+  } catch (err) {
+    console.log("Error in editing data ", err);
+  }
+  }
+
+  try {
 
     let selectedPriority;
 
@@ -73,8 +97,8 @@ async function showAllData(todo) {
     <h5 class="card-title">${todo.title}</h5>
     <p class="card-text">${todo.description}</p>
     <h5 class="card-title">${todo.priority}</h5>
-    <button class="btn" ><i class="fa-solid fa-pen-to-square"></i></button>
-    <button class="btn " ><i class="fa-solid fa-trash"></i></button>
+    <button class="btn btn-outline-success" onclick="editToDo(${todo.id} , '${todo.title}' , '${todo.description}' , '${todo.priority}')" ><i class="fa-solid fa-pen-to-square"></i></button>
+    <button class="btn btn-success"  onclick="dltToDo()" ><i class="fa-solid fa-trash"></i></button>
   </div>
 </div>`;
   });
@@ -83,7 +107,10 @@ async function showAllData(todo) {
 //Read all higher priority  data
 async function readHigh() {
   try {
-    const { data, error } = await supabase.from("Todo application").select("*").eq("priority" , "high");
+    const { data, error } = await supabase
+      .from("Todo application")
+      .select("*")
+      .eq("priority", "high");
 
     if (data) {
       console.log(data);
@@ -105,8 +132,8 @@ async function showAllHighData(todo) {
     <h5 class="card-title">${todo.title}</h5>
     <p class="card-text">${todo.description}</p>
     <h5 class="card-title">${todo.priority}</h5>
-    <button class="btn" ><i class="fa-solid fa-pen-to-square"></i></button>
-    <button class="btn " ><i class="fa-solid fa-trash"></i></button>
+    <button class="btn btn-outline-success" onclick="editToDo(${todo.id} , '${todo.title}' , '${todo.description}' , '${todo.priority}')" ><i class="fa-solid fa-pen-to-square"></i></button>
+    <button class="btn btn-success"  onclick="dltToDo()" ><i class="fa-solid fa-trash"></i></button>
   </div>
 </div>`;
   });
@@ -115,7 +142,10 @@ async function showAllHighData(todo) {
 //Read all medium priority data
 async function readMedium() {
   try {
-    const { data, error } = await supabase.from("Todo application").select("*").eq("priority" , "medium");
+    const { data, error } = await supabase
+      .from("Todo application")
+      .select("*")
+      .eq("priority", "medium");
 
     if (data) {
       console.log(data);
@@ -137,8 +167,8 @@ async function showAllMediumData(todo) {
     <h5 class="card-title">${todo.title}</h5>
     <p class="card-text">${todo.description}</p>
     <h5 class="card-title">${todo.priority}</h5>
-    <button class="btn" ><i class="fa-solid fa-pen-to-square"></i></button>
-    <button class="btn " ><i class="fa-solid fa-trash"></i></button>
+    <button class="btn btn-outline-success" onclick="editToDo(${todo.id} , '${todo.title}' , '${todo.description}' , '${todo.priority}')" ><i class="fa-solid fa-pen-to-square"></i></button>
+    <button class="btn btn-success"  onclick="dltToDo()" ><i class="fa-solid fa-trash"></i></button>
   </div>
 </div>`;
   });
@@ -147,7 +177,10 @@ async function showAllMediumData(todo) {
 //Read all lower priority data
 async function readLow() {
   try {
-    const { data, error } = await supabase.from("Todo application").select("*").eq("priority" , "low");
+    const { data, error } = await supabase
+      .from("Todo application")
+      .select("*")
+      .eq("priority", "low");
 
     if (data) {
       console.log(data);
@@ -169,9 +202,36 @@ async function showAllLowData(todo) {
     <h5 class="card-title">${todo.title}</h5>
     <p class="card-text">${todo.description}</p>
     <h5 class="card-title">${todo.priority}</h5>
-    <button class="btn" ><i class="fa-solid fa-pen-to-square"></i></button>
-    <button class="btn " ><i class="fa-solid fa-trash"></i></button>
+    <button class="btn btn-outline-success" onclick="editToDo(${todo.id} , '${todo.title}' , '${todo.description}' , '${todo.priority}')" ><i class="fa-solid fa-pen-to-square"></i></button>
+    <button class="btn btn-success"  onclick="dltToDo()" ><i class="fa-solid fa-trash"></i></button>
   </div>
 </div>`;
   });
+}
+
+
+let editId = null ;
+
+//Edit function
+window.editToDo =function(id , ti , des , pri){
+  console.log(id , ti , des ,pri );
+  editId = id;
+  title.value = ti 
+  description.value = des
+
+  console.log(editId);
+  addtodo.innerHTML = 'Edit to do'
+
+  //priority.value = pri
+  priority.forEach(onepri => {
+    //console.log(onepri.value);   give all values
+    //give the clicked one for three times
+    //if(onepri.value = pri){
+    //  console.log(onepri.value);  
+    //}
+    
+    //means agar value equal hy jo user ny click ka to wo wala radio button checked ay
+    onepri.checked = onepri.value == pri
+    console.log(onepri.checked , onepri.value)
+  })
 }
