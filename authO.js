@@ -11,7 +11,7 @@ async function logOutUser(e) {
         console.log(error)
     }
     else{
-        alert('LogOut Successfully');
+        alert('Log Out Successfully');
         location.href = 'index.html'
     }
     } 

@@ -23,28 +23,6 @@ async function add() {
       alert("Please write description");
       return;
     }
-
-  //Edit data
-  if (editId) {
-    console.log("Id to be edited : ", editId);
-    console.log("Id to be edited : ", editId);
-    try {
-    const { data, error } = await supabase
-      .from("Todo application")
-      .upsert({
-        title: title.value,
-        priority: selectedPriority,
-        description: description.value,
-      })
-      .select("*")
-      .eq("id", editId);
-  } catch (err) {
-    console.log("Error in editing data ", err);
-  }
-  }
-
-  try {
-
     let selectedPriority;
 
     for (let p of priority) {
@@ -53,6 +31,47 @@ async function add() {
       }
     }
     console.log(selectedPriority);
+
+  //Edit data
+  if (editId) {
+    console.log("Id to be edited : ", editId);
+
+    try {
+    const { error } = await supabase
+      .from("Todo application")
+      .update({
+        title: title.value,
+        priority: selectedPriority,
+        description: description.value,
+      })
+      .eq("id", editId);
+
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Data edited successfully");
+        alert("Data edited successfully");
+        //Empty field values when we have edited data
+        // Reset edit mode
+        editId = null;
+        title.value = "";
+        description.value = "";
+        for (let p of priority) {
+          if (p.checked) {
+            p.checked = false; //it remove the selected radio button
+          }
+        }
+        await read(); //calling function which is showing data
+        addtodo.innerHTML = "Add to do";
+      }
+    }
+     catch (err) {
+    console.log("Error in editing data ", err);
+    }
+  }
+
+  else{
+    try {
 
     const { error } = await supabase.from("Todo application").insert({
       title: title.value,
@@ -65,9 +84,24 @@ async function add() {
     } else {
       alert("Data inserted successfully");
     }
-  } catch (err) {
+
+    //Empty field values when we have inserted data
+      title.value = "";
+      description.value = "";
+      for (let p of priority) {
+        if (p.checked) {
+          p.checked = false; //it remove the selected radio button
+        }
+      }
+      await read(); //calling function which is showing data
+      addtodo.innerHTML = "Add to do";
+
+  } 
+  catch (err) {
     console.log("Error in adding data to database ", err);
   }
+  }
+  
 }
 
 addtodo.addEventListener("click", add);
@@ -98,7 +132,7 @@ async function showAllData(todo) {
     <p class="card-text">${todo.description}</p>
     <h5 class="card-title">${todo.priority}</h5>
     <button class="btn btn-outline-success" onclick="editToDo(${todo.id} , '${todo.title}' , '${todo.description}' , '${todo.priority}')" ><i class="fa-solid fa-pen-to-square"></i></button>
-    <button class="btn btn-success"  onclick="dltToDo()" ><i class="fa-solid fa-trash"></i></button>
+    <button class="btn btn-success"  onclick="dltToDo(${todo.id})" ><i class="fa-solid fa-trash"></i></button>
   </div>
 </div>`;
   });
@@ -133,7 +167,7 @@ async function showAllHighData(todo) {
     <p class="card-text">${todo.description}</p>
     <h5 class="card-title">${todo.priority}</h5>
     <button class="btn btn-outline-success" onclick="editToDo(${todo.id} , '${todo.title}' , '${todo.description}' , '${todo.priority}')" ><i class="fa-solid fa-pen-to-square"></i></button>
-    <button class="btn btn-success"  onclick="dltToDo()" ><i class="fa-solid fa-trash"></i></button>
+    <button class="btn btn-success"  onclick="dltToDo(${todo.id})" ><i class="fa-solid fa-trash"></i></button>
   </div>
 </div>`;
   });
@@ -168,7 +202,7 @@ async function showAllMediumData(todo) {
     <p class="card-text">${todo.description}</p>
     <h5 class="card-title">${todo.priority}</h5>
     <button class="btn btn-outline-success" onclick="editToDo(${todo.id} , '${todo.title}' , '${todo.description}' , '${todo.priority}')" ><i class="fa-solid fa-pen-to-square"></i></button>
-    <button class="btn btn-success"  onclick="dltToDo()" ><i class="fa-solid fa-trash"></i></button>
+    <button class="btn btn-success"  onclick="dltToDo(${todo.id})" ><i class="fa-solid fa-trash"></i></button>
   </div>
 </div>`;
   });
@@ -203,7 +237,7 @@ async function showAllLowData(todo) {
     <p class="card-text">${todo.description}</p>
     <h5 class="card-title">${todo.priority}</h5>
     <button class="btn btn-outline-success" onclick="editToDo(${todo.id} , '${todo.title}' , '${todo.description}' , '${todo.priority}')" ><i class="fa-solid fa-pen-to-square"></i></button>
-    <button class="btn btn-success"  onclick="dltToDo()" ><i class="fa-solid fa-trash"></i></button>
+    <button class="btn btn-success"  onclick="dltToDo(${todo.id})" ><i class="fa-solid fa-trash"></i></button>
   </div>
 </div>`;
   });
@@ -235,3 +269,38 @@ window.editToDo =function(id , ti , des , pri){
     console.log(onepri.checked , onepri.value)
   })
 }
+
+//Delete data
+window.dltToDo = async function (id) {
+  try {
+    console.log(id);
+    //const response = await supabase.from("Todo application").delete().eq("id", id);
+    //console.log(response);    //Give information of delete data and give error as null when data is deleted
+
+    const error = await supabase.from("Todo application").delete().eq("id", id);
+    console.log(error);
+
+    /*if(error == null){
+      console.log('Data deleted successfully')
+      alert('Data deleted successfully')
+      await read()           //Function that show all to dos
+    }*/
+
+    // If there is an error while deleting, handle it
+    if (error == null) {
+      console.log(error);
+      alert("Error deleting data");
+      return;
+    }
+
+    // If no error, show success alert and refresh the UI
+    console.log("Data deleted successfully");
+    alert("Data deleted successfully");
+
+    await read()           //Function that show all to dos
+
+  } 
+  catch (err) {
+    console.log(err);
+  }
+};
